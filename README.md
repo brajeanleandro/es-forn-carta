@@ -1,19 +1,22 @@
-# ES FORN Carta · V1
+# ES FORN Carta · V2 Supabase
 
-Web pública de solo lectura para clientes.
+Esta versión ya NO lleva la carta escrita dentro del HTML.
 
-Incluye:
-- diseño mobile-first;
-- Cafés, Bocadillos y Refrescos;
-- precios;
-- descripciones;
-- variantes;
-- extras;
-- alérgenos;
-- posibles trazas;
-- detalle de producto;
-- sin edición ni panel propietario.
+Al abrirse:
+1. conecta con Supabase;
+2. lee categorías públicas;
+3. lee productos visibles;
+4. lee variantes, extras, alérgenos y trazas;
+5. construye la carta en el móvil.
 
-Repo recomendado: `es-forn-carta`
+La clave incluida es una Publishable Key de Supabase, diseñada para usarse en aplicaciones públicas.
+La seguridad depende de los permisos y políticas de la base de datos, que ya están configurados.
 
-Esta V1 aún lleva los productos dentro del propio HTML. Más adelante Admin y Carta compartirán una base de datos común.
+La carta cliente:
+- solo tiene acceso de lectura;
+- no recibe internal_cost;
+- no puede editar productos;
+- no recibe productos ocultos.
+
+Para publicar:
+sustituye `index.html` en GitHub `es-forn-carta`, haz Commit y Vercel actualizará la misma URL.

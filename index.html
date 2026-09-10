@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#7d1826">
-<title>Es Forn · Carta</title>
+<title>Es Forn · Carta en vivo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -68,6 +68,18 @@ dialog::backdrop{background:rgba(35,20,15,.42);backdrop-filter:blur(3px)}
 .block h4{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
 .variant{display:flex;justify-content:space-between;gap:10px;padding:8px 0;font-size:14px}
 .notice{margin-top:12px;padding:11px 12px;border-radius:14px;background:#fff6de;border:1px solid #edd9a0;font-size:12px;line-height:1.45}
+
+.error-card{padding:18px;text-align:center}
+.error-card strong{display:block;margin-bottom:6px}
+.retry{
+  margin-top:12px;border:0;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;padding:11px 15px;border-radius:14px;font-weight:700;cursor:pointer
+}
+.loading-line{
+  height:14px;border-radius:999px;background:linear-gradient(90deg,#f1e5dc,#fbf5ef,#f1e5dc);
+  background-size:200% 100%;animation:load 1.2s linear infinite;margin:8px 0
+}
+@keyframes load{to{background-position:-200% 0}}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
@@ -83,8 +95,15 @@ dialog::backdrop{background:rgba(35,20,15,.42);backdrop-filter:blur(3px)}
     </div>
   </header>
 
-  <div class="sticky"><div class="categories" id="categoryBar"></div></div>
-  <main id="menu"></main>
+  <div class="sticky"><div class="categories" id="categoryBar"><span class="cat-btn active">Cargando carta…</span></div></div>
+  <main id="menu">
+    <section class="section">
+      <div class="card" style="padding:18px">
+        <strong>Cargando carta de Es Forn…</strong>
+        <p class="item-desc" style="margin-top:6px">Un momento.</p>
+      </div>
+    </section>
+  </main>
 
   <footer class="footer">
     La información de alérgenos se muestra según la ficha de cada producto.
@@ -113,101 +132,166 @@ dialog::backdrop{background:rgba(35,20,15,.42);backdrop-filter:blur(3px)}
 </dialog>
 
 <script>
-(() => {
-  const MENU = [
-    {name:"Café solo",category:"Cafés",description:"Café espresso.",price:1.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Cortado",category:"Cafés",description:"Café espresso con un toque de leche.",price:1.60,status:"available",variants:[],extras:[],allergens:["Leche"],traces:[]},
-    {name:"Café con leche",category:"Cafés",description:"Café espresso con leche.",price:1.80,status:"available",variants:[],extras:[],allergens:["Leche"],traces:[]},
-    {name:"Café americano",category:"Cafés",description:"Café espresso alargado con agua caliente.",price:1.80,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Café bombón",category:"Cafés",description:"Café espresso con leche condensada.",price:2.20,status:"available",variants:[],extras:[],allergens:["Leche"],traces:[]},
-    {name:"Bocadillo de jamón",category:"Bocadillos",description:"Bocadillo de jamón serrano.",price:4.50,status:"available",variants:[["Medio",3.00],["Entero",4.50]],extras:[],allergens:["Gluten"],traces:[]},
-    {name:"Bocadillo de jamón y queso",category:"Bocadillos",description:"Jamón y queso en pan crujiente.",price:4.90,status:"available",variants:[["Medio",3.30],["Entero",4.90]],extras:[],allergens:["Gluten","Leche"],traces:[]},
-    {name:"Bocadillo de lomo",category:"Bocadillos",description:"Lomo a la plancha en pan crujiente.",price:5.50,status:"available",variants:[["Medio",3.70],["Entero",5.50]],extras:[["Queso",1.00],["Bacon",1.50]],allergens:["Gluten"],traces:["Leche"]},
-    {name:"Bocadillo de bacon y queso",category:"Bocadillos",description:"Bacon y queso caliente.",price:5.50,status:"available",variants:[["Medio",3.70],["Entero",5.50]],extras:[],allergens:["Gluten","Leche"],traces:[]},
-    {name:"Bocadillo de tortilla",category:"Bocadillos",description:"Tortilla española en pan.",price:4.80,status:"available",variants:[["Medio",3.20],["Entero",4.80]],extras:[],allergens:["Gluten","Huevos"],traces:[]},
-    {name:"Coca-Cola",category:"Refrescos",description:"Refresco de cola.",price:2.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Coca-Cola Zero",category:"Refrescos",description:"Refresco de cola sin azúcar.",price:2.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Fanta Naranja",category:"Refrescos",description:"Refresco sabor naranja.",price:2.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Fanta Limón",category:"Refrescos",description:"Refresco sabor limón.",price:2.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Sprite",category:"Refrescos",description:"Refresco de lima-limón.",price:2.50,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Aquarius Limón",category:"Refrescos",description:"Bebida refrescante sabor limón.",price:2.70,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Nestea Limón",category:"Refrescos",description:"Té frío sabor limón.",price:2.70,status:"available",variants:[],extras:[],allergens:[],traces:[]},
-    {name:"Agua mineral",category:"Refrescos",description:"Agua mineral.",price:1.80,status:"available",variants:[],extras:[],allergens:[],traces:[]}
-  ];
 
-  const euro = n => Number(n).toLocaleString("es-ES",{style:"currency",currency:"EUR"});
-  const cats = [...new Set(MENU.map(p=>p.category))];
+(() => {
+  const SUPABASE_URL = "https://jdhlsgyrcrqyfbbjgbnf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_l-l6-nEg86Ax7EeO-jvsqQ_HaYGDGjg";
   const menu = document.getElementById("menu");
   const bar = document.getElementById("categoryBar");
   const dialog = document.getElementById("productDialog");
+  let PRODUCTS = [];
+  let CATEGORIES = [];
 
-  bar.innerHTML = cats.map((c,i)=>`<button class="cat-btn ${i===0?"active":""}" type="button" data-cat="${c}">${c}</button>`).join("");
+  const euro = n => Number(n).toLocaleString("es-ES",{style:"currency",currency:"EUR"});
+  const esc = s => String(s ?? "").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
 
-  menu.innerHTML = cats.map(c=>{
-    const items = MENU.filter(p=>p.category===c && p.status!=="hidden");
-    return `<section class="section" id="cat-${c}">
-      <div class="section-head"><h2>${c}</h2><small>${items.length} productos</small></div>
-      <div class="card">${items.map(p=>{
-        const idx = MENU.indexOf(p);
-        const tags = [];
-        if (p.allergens.length) tags.push(`Alérgenos: ${p.allergens.join(", ")}`);
-        if (p.status==="soldout") tags.push("Agotado");
-        return `<article class="item" data-index="${idx}" tabindex="0" role="button">
-          <div class="item-main">
-            <h3 class="item-title">${p.name}</h3>
-            <p class="item-desc">${p.description}</p>
-            <div class="item-meta">${tags.map(t=>`<span class="tag ${t==="Agotado"?"sold":""}">${t}</span>`).join("")}</div>
+  async function getView(name, order="sort_order.asc") {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${name}?select=*&order=${order}`, {
+      headers: {
+        "apikey": SUPABASE_KEY
+      },
+      cache: "no-store"
+    });
+    if(!res.ok) {
+      const text = await res.text();
+      throw new Error(`${name}: ${res.status} ${text}`);
+    }
+    return res.json();
+  }
+
+  async function loadMenu() {
+    bar.innerHTML = '<span class="cat-btn active">Cargando carta…</span>';
+    menu.innerHTML = `
+      <section class="section">
+        <div class="card" style="padding:18px">
+          <strong>Cargando carta de Es Forn…</strong>
+          <div class="loading-line" style="width:72%"></div>
+          <div class="loading-line" style="width:48%"></div>
+        </div>
+      </section>`;
+
+    try {
+      const [categories, products, variants, extras, allergens, traces] = await Promise.all([
+        getView("public_menu_categories"),
+        getView("public_menu_products", "sort_order.asc"),
+        getView("public_menu_variants"),
+        getView("public_menu_extras"),
+        getView("public_menu_allergens"),
+        getView("public_menu_traces")
+      ]);
+
+      CATEGORIES = categories;
+
+      const variantsBy = Object.groupBy ? Object.groupBy(variants, x=>x.product_id) : variants.reduce((a,x)=>((a[x.product_id]??=[]).push(x),a),{});
+      const extrasBy = Object.groupBy ? Object.groupBy(extras, x=>x.product_id) : extras.reduce((a,x)=>((a[x.product_id]??=[]).push(x),a),{});
+      const allergensBy = Object.groupBy ? Object.groupBy(allergens, x=>x.product_id) : allergens.reduce((a,x)=>((a[x.product_id]??=[]).push(x),a),{});
+      const tracesBy = Object.groupBy ? Object.groupBy(traces, x=>x.product_id) : traces.reduce((a,x)=>((a[x.product_id]??=[]).push(x),a),{});
+
+      PRODUCTS = products.map(p=>({
+        ...p,
+        variants:(variantsBy[p.id]||[]).sort((a,b)=>a.sort_order-b.sort_order),
+        extras:(extrasBy[p.id]||[]).sort((a,b)=>a.sort_order-b.sort_order),
+        allergens:(allergensBy[p.id]||[]).sort((a,b)=>a.sort_order-b.sort_order).map(x=>x.name),
+        traces:(tracesBy[p.id]||[]).sort((a,b)=>a.sort_order-b.sort_order).map(x=>x.name)
+      }));
+
+      render();
+    } catch(err) {
+      console.error(err);
+      bar.innerHTML = '<span class="cat-btn active">Carta</span>';
+      menu.innerHTML = `
+        <section class="section">
+          <div class="card error-card">
+            <strong>No hemos podido cargar la carta.</strong>
+            <p class="item-desc">Comprueba tu conexión e inténtalo otra vez.</p>
+            <button id="retry" class="retry" type="button">Volver a intentar</button>
           </div>
-          <div class="price">${euro(p.price)}</div>
-        </article>`;
-      }).join("")}</div>
-    </section>`;
-  }).join("");
+        </section>`;
+      document.getElementById("retry").addEventListener("click",loadMenu);
+    }
+  }
 
-  function openProduct(p){
+  function render() {
+    if(!CATEGORIES.length || !PRODUCTS.length) {
+      bar.innerHTML = '<span class="cat-btn active">Carta</span>';
+      menu.innerHTML = '<section class="section"><div class="card error-card"><strong>La carta está vacía.</strong></div></section>';
+      return;
+    }
+
+    bar.innerHTML = CATEGORIES.map((c,i)=>`<button class="cat-btn ${i===0?"active":""}" type="button" data-id="${c.id}">${esc(c.name)}</button>`).join("");
+
+    menu.innerHTML = CATEGORIES.map(c=>{
+      const items = PRODUCTS.filter(p=>p.category_id===c.id);
+      if(!items.length) return "";
+      return `<section class="section" id="cat-${c.id}">
+        <div class="section-head"><h2>${esc(c.name)}</h2><small>${items.length} producto${items.length===1?"":"s"}</small></div>
+        <div class="card">${items.map(p=>{
+          const idx = PRODUCTS.indexOf(p);
+          const tags = [];
+          if (p.allergens.length) tags.push(`Alérgenos: ${p.allergens.join(", ")}`);
+          if (p.status==="soldout") tags.push("Agotado");
+          const displayPrice = p.promo_price != null
+            ? `<span>${euro(p.promo_price)} <small style="text-decoration:line-through;color:var(--muted)">${euro(p.price)}</small></span>`
+            : euro(p.price);
+          return `<article class="item" data-index="${idx}" tabindex="0" role="button">
+            <div class="item-main">
+              <h3 class="item-title">${esc(p.name)}</h3>
+              <p class="item-desc">${esc(p.description||"")}</p>
+              <div class="item-meta">${tags.map(t=>`<span class="tag ${t==="Agotado"?"sold":""}">${esc(t)}</span>`).join("")}</div>
+            </div>
+            <div class="price">${displayPrice}</div>
+          </article>`;
+        }).join("")}</div>
+      </section>`;
+    }).join("");
+
+    document.querySelectorAll(".item").forEach(el=>{
+      const handler=()=>openProduct(PRODUCTS[Number(el.dataset.index)]);
+      el.addEventListener("click",handler);
+      el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();handler();}});
+    });
+
+    bar.querySelectorAll(".cat-btn").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        bar.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("cat-"+btn.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    });
+  }
+
+  function openProduct(p) {
     document.getElementById("mName").textContent=p.name;
-    document.getElementById("mPrice").textContent=euro(p.price);
+    document.getElementById("mPrice").innerHTML=p.promo_price!=null
+      ? `${euro(p.promo_price)} <span style="font:500 14px Inter;color:var(--muted);text-decoration:line-through">${euro(p.price)}</span>`
+      : euro(p.price);
     document.getElementById("mDescription").textContent=p.description || "";
     document.getElementById("mStatus").innerHTML=p.status==="soldout"?'<div class="tag sold" style="display:inline-flex;margin-top:10px">Agotado</div>':"";
 
     const variants=document.getElementById("mVariants");
     variants.style.display=p.variants.length?"block":"none";
-    variants.innerHTML=p.variants.length?'<h4>Variantes</h4>'+p.variants.map(v=>`<div class="variant"><span>${v[0]}</span><strong>${euro(v[1])}</strong></div>`).join(""):"";
+    variants.innerHTML=p.variants.length?'<h4>Variantes</h4>'+p.variants.map(v=>`<div class="variant"><span>${esc(v.name)}</span><strong>${euro(v.price)}</strong></div>`).join(""):"";
 
     const extras=document.getElementById("mExtras");
     extras.style.display=p.extras.length?"block":"none";
-    extras.innerHTML=p.extras.length?'<h4>Extras</h4>'+p.extras.map(v=>`<div class="variant"><span>${v[0]}</span><strong>+ ${euro(v[1])}</strong></div>`).join(""):"";
+    extras.innerHTML=p.extras.length?'<h4>Extras</h4>'+p.extras.map(v=>`<div class="variant"><span>${esc(v.name)}</span><strong>+ ${euro(v.price)}</strong></div>`).join(""):"";
 
     const allergens=document.getElementById("mAllergens");
     allergens.style.display=p.allergens.length?"block":"none";
-    allergens.innerHTML=p.allergens.length?'<h4>Alérgenos</h4><div class="item-meta">'+p.allergens.map(a=>`<span class="tag">${a}</span>`).join("")+'</div>':"";
+    allergens.innerHTML=p.allergens.length?'<h4>Alérgenos</h4><div class="item-meta">'+p.allergens.map(a=>`<span class="tag">${esc(a)}</span>`).join("")+'</div>':"";
 
     const traces=document.getElementById("mTraces");
     traces.style.display=p.traces.length?"block":"none";
-    traces.innerHTML=p.traces.length?'<h4>Posibles trazas</h4><div class="item-meta">'+p.traces.map(a=>`<span class="tag">${a}</span>`).join("")+'</div>':"";
+    traces.innerHTML=p.traces.length?'<h4>Posibles trazas</h4><div class="item-meta">'+p.traces.map(a=>`<span class="tag">${esc(a)}</span>`).join("")+'</div>':"";
 
     dialog.showModal();
   }
 
-  document.querySelectorAll(".item").forEach(el=>{
-    const handler=()=>openProduct(MENU[Number(el.dataset.index)]);
-    el.addEventListener("click",handler);
-    el.addEventListener("keydown",e=>{
-      if(e.key==="Enter"||e.key===" "){e.preventDefault();handler();}
-    });
-  });
-
-  bar.querySelectorAll(".cat-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      bar.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById("cat-"+btn.dataset.cat).scrollIntoView({behavior:"smooth",block:"start"});
-    });
-  });
-
   document.getElementById("closeModal").addEventListener("click",()=>dialog.close());
   dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close();});
+  loadMenu();
 })();
+
 </script>
 </body>
 </html>
