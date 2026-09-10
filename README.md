@@ -20,3 +20,4 @@ La carta cliente:
 
 Para publicar:
 sustituye `index.html` en GitHub `es-forn-carta`, haz Commit y Vercel actualizará la misma URL.
+vercel conectado
