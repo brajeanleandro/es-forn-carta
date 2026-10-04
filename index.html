@@ -142,6 +142,10 @@ dialog{border-radius:16px;width:min(540px,calc(100% - 18px))}
 }
 
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.beer-variants{margin-top:10px;border-top:1px solid var(--line);padding-top:7px;display:grid;gap:2px}
+.beer-variant-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;font-size:14px;color:var(--text)}
+.beer-variant-row strong{font-weight:800;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -293,13 +297,28 @@ dialog{border-radius:16px;width:min(540px,calc(100% - 18px))}
     const tags=[];
     if(p.allergens.length) tags.push(`Alérgenos: ${p.allergens.join(", ")}`);
     if(p.status==="soldout") tags.push("Agotado");
+
+    const category=CATEGORIES.find(c=>c.id===p.category_id);
+    const isBeer=(category?.name||"").toLowerCase().includes("cerve");
+    const hasBeerVariants=isBeer && p.variants?.length;
+
     const displayPrice=p.promo_price!=null
       ? `<span>${euro(p.promo_price)} <small style="text-decoration:line-through;color:var(--muted)">${euro(p.price)}</small></span>`
-      : euro(p.price);
+      : (hasBeerVariants ? "Opciones" : euro(p.price));
+
+    const beerVariants=hasBeerVariants
+      ? `<div class="beer-variants">${p.variants.map(v=>`
+          <div class="beer-variant-row">
+            <span>${esc(v.name)}</span>
+            <strong>${euro(v.price)}</strong>
+          </div>`).join("")}</div>`
+      : "";
+
     return `<article class="compact-item" data-index="${idx}" tabindex="0" role="button">
       <div class="item-main">
         <h3 class="item-title">${esc(p.name)}</h3>
         ${p.description?`<p class="item-desc">${esc(p.description)}</p>`:""}
+        ${beerVariants}
         <div class="item-meta">${tags.map(t=>`<span class="tag ${t==="Agotado"?"sold":""}">${esc(t)}</span>`).join("")}</div>
       </div>
       <div class="price">${displayPrice}</div>
